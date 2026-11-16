@@ -198,7 +198,7 @@ body.rc-lock{overflow:hidden}
 <div class="card" id="rcard">
 <div class="rc-hd">
 <div><strong style="font-size:17px">Painel de gravação</strong><div class="meta rc-desc" style="margin-top:2px">Use o + ou arraste os botões da lista para o painel. No modo Editar, arraste cada botão para a posição que quiser. No modo Gravar, clique para marcar como feito.</div></div>
-<div class="rc-tools"><input type="date" id="recd" aria-label="Data da gravação"><div class="rc-seg" role="group" aria-label="Modo do painel"><button data-m="edit" class="on">Editar</button><button data-m="rec">Gravar</button></div><label style="display:flex;align-items:center;gap:6px;margin:0;font-size:13px;color:var(--tx)"><input type="checkbox" id="rcsnap" checked style="width:auto;margin:0">Alinhar à grade</label><button id="rcorg">Organizar na lateral</button><button id="rcbase">Salvar como padrão</button><button id="rcarr">Layout do painel UE</button><button id="rcprev">Repetir último dia</button><button id="rcclr">Limpar painel</button><button id="rclist">Ocultar lista</button><button id="rcfull">Tela cheia</button><button class="p" id="rcpng">Salvar print do painel</button></div>
+<div class="rc-tools"><input type="date" id="recd" aria-label="Data da gravação"><div class="rc-seg" role="group" aria-label="Modo do painel"><button data-m="edit" class="on">Editar</button><button data-m="rec">Gravar</button></div><label style="display:flex;align-items:center;gap:6px;margin:0;font-size:13px;color:var(--tx)"><input type="checkbox" id="rcsnap" checked style="width:auto;margin:0">Alinhar à grade</label><button id="rcarr">Layout do painel UE</button><button id="rcprev">Repetir último dia</button><button id="rcclr">Limpar painel</button><button class="p" id="rcpng">Salvar print do painel</button></div>
 </div>
 <div id="rcap" class="rc-cap"><div class="rc-ct"><strong id="rct"></strong><span class="meta" id="rcn"></span></div><div class="rc-pnl"><div class="rc-cv" id="rcp"></div></div></div>
 <label for="rcnote" class="rc-nt">Anotações da gravação</label><textarea id="rcnote" placeholder="Observações sobre a gravação deste dia..."></textarea>
@@ -614,15 +614,15 @@ $('recd').value=recDate;$('recd').onchange=()=>{recDate=$('recd').value||iso();d
 $('rcnote').oninput=e=>{rcDay().note=e.target.value;save()};
 $('rcsnap').onchange=e=>{recSnap=e.target.checked};
 $('rcarr').onclick=()=>recSet(r=>{r.pos={}});
-$('rcclr').onclick=e=>{const b=e.currentTarget;if(b.dataset.arm){recSet(r=>{r.on=[];r.done=[];r.pos={}});b.textContent='Limpar painel';delete b.dataset.arm}else{b.dataset.arm=1;b.textContent='Confirmar?';setTimeout(()=>{b.textContent='Limpar painel';delete b.dataset.arm},3000)}};
+$('rcclr').onclick=e=>{const b=e.currentTarget;if(b.dataset.arm){recSet(r=>{const B=rcBase();r.on=[...B.on];r.done=[];r.pos=JSON.parse(JSON.stringify(B.pos||{}))});b.textContent='Limpar painel';delete b.dataset.arm}else{b.dataset.arm=1;b.textContent='Confirmar?';setTimeout(()=>{b.textContent='Limpar painel';delete b.dataset.arm},3000)}};
 $('rcprev').onclick=()=>{const d=Object.keys(S.rec||{}).filter(k=>k<recDate&&S.rec[k].on.length).sort().pop();if(!d){note('Nenhum dia anterior com painel configurado.');return}recSet(r=>{const p=S.rec[d];r.on=[...p.on];r.pos=JSON.parse(JSON.stringify(p.pos||{}));r.done=[]})};
 function rcSetFull(on){rcFull=on;$('rcard').classList.toggle('full',on);document.body.classList.toggle('rc-lock',on);$('rcfull').textContent=on?'Sair da tela cheia':'Tela cheia';drawRec()}
-$('rcfull').onclick=()=>rcSetFull(!rcFull);
-$('rclist').onclick=()=>{const h=document.querySelector('.rc-lay').classList.toggle('nolist');$('rclist').textContent=h?'Mostrar lista':'Ocultar lista';drawRec()};
+if($('rcfull'))$('rcfull').onclick=()=>rcSetFull(!rcFull);
+if($('rclist'))$('rclist').onclick=()=>{const h=document.querySelector('.rc-lay').classList.toggle('nolist');$('rclist').textContent=h?'Mostrar lista':'Ocultar lista';drawRec()};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&rcFull)rcSetFull(false)});
 window.addEventListener('resize',()=>{clearTimeout(rcT);rcT=setTimeout(()=>{if(!$('v6').hidden)drawRec()},120)});
-$('rcorg').onclick=rcArrange;
-$('rcbase').onclick=()=>{rcSaveBase();const b=$('rcbase');b.textContent='Padrão salvo ✓';setTimeout(()=>{b.textContent='Salvar como padrão'},2000)};
+if($('rcorg'))$('rcorg').onclick=rcArrange;
+if($('rcbase'))$('rcbase').onclick=()=>{rcSaveBase();const b=$('rcbase');b.textContent='Padrão salvo ✓';setTimeout(()=>{b.textContent='Salvar como padrão'},2000)};
 $('rcpng').onclick=recPng;
 
 $('exp').onclick=pdfProjetos;
