@@ -147,18 +147,43 @@ body.rc-lock{overflow:hidden}
 #rcard.full{position:fixed;inset:0;z-index:100;border-radius:0;overflow:auto;margin:0;padding:12px 16px}
 #rcard.full .rc-desc,#rcard.full .rc-nt,#rcard.full #rcnote{display:none}
 #rcard.full .rc-hd{margin-bottom:8px}
+.kb{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));align-items:start}
+.kc{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px;min-height:120px}
+.kc.over{outline:2px dashed var(--ac);outline-offset:-2px}
+.kh{display:flex;justify-content:space-between;align-items:center;border-top:3px solid;padding:8px 4px 8px;margin:-10px -10px 8px;border-radius:12px 12px 0 0;padding-left:14px;padding-right:14px}
+.kl{display:grid;gap:8px;min-height:20px}
+.kk{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;cursor:pointer}
+.kk:hover{border-color:var(--ac)}.kk.drag{opacity:.4}
+.kt{font-weight:600;margin-bottom:6px;overflow-wrap:anywhere}
+.kf{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;color:var(--mu);font-size:12px}
+.av{display:inline-flex}.av i,.mem i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ac);color:#fff;font-size:11px;font-weight:700;border:2px solid var(--card);margin-left:-6px}
+.ka input{margin-top:8px;background:transparent;border-style:dashed}
+#tmod{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow:auto}
+#tmod[hidden]{display:none}
+.tbox{background:var(--card);border:1px solid var(--bd);border-radius:14px;width:min(920px,100%);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.tbox>.th2{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--bd)}
+.tbox .th2 select{width:auto;font-weight:600}
+.tl,.tr{padding:16px}.tr{border-left:1px solid var(--bd);background:var(--bg);border-radius:0 0 14px 0}
+.tbox .name{width:100%;font-size:22px}
+.mem{display:flex;gap:6px;flex-wrap:wrap}.mem button{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:99px;color:var(--mu)}.mem button i{margin:0;border:0;background:var(--wk)}
+.mem button.on{color:var(--tx);border-color:var(--ac)}.mem button.on i{background:var(--ac)}
+.rf{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--bd)}.rf a{color:var(--ac);overflow-wrap:anywhere}
+.rg{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.tbox textarea{min-height:110px}
+@media (max-width:720px){.tbox{grid-template-columns:1fr}.tr{border-left:0;border-top:1px solid var(--bd);border-radius:0 0 14px 14px}}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
 <header><h1>Controle de Deploy · Unreal Engine</h1><span class="date"><span id="sync"></span> &nbsp;·&nbsp; <span id="today"></span></span></header>
 
-<nav class="tabs"><button class="tab on" data-v="1">Painel do dia</button><button class="tab" data-v="2">Histórico de projetos</button><button class="tab" data-v="3">Instruções</button><button class="tab" data-v="4">Backup</button><button class="tab" data-v="5">Fila de deploy</button><button class="tab" data-v="6">Gravação do dia</button></nav>
+<nav class="tabs"><button class="tab on" data-v="1">Painel do dia</button><button class="tab" data-v="2">Histórico de projetos</button><button class="tab" data-v="3">Instruções</button><button class="tab" data-v="4">Backup</button><button class="tab" data-v="6">Gravação do dia</button></nav>
 <section id="v1">
-<h2>Bases matriz (nome fixo no deploy final)</h2>
-<div class="grid bases" id="bases"></div>
+<div id="dstat"></div>
 
-<h2>Equipe · o que cada um está fazendo hoje</h2>
+
+<h2>Equipe · status de hoje</h2>
 <div class="grid" id="people"></div>
 
 <div class="bar">
@@ -205,12 +230,6 @@ body.rc-lock{overflow:hidden}
 </div>
 </div>
 </section>
-<section id="v5" hidden>
-<div id="dp"></div>
-<div class="bar"><button class="p" id="dreg">Registrar deploy no histórico</button><button id="dref">Atualizar fila</button><button id="dpdf">Exportar PDF da fila</button><button id="th2">Alternar tema claro/escuro</button></div>
-<h2>Histórico de deploys</h2>
-<div id="dlog"></div>
-</section>
 <section id="v4" hidden>
 <h2>Backup dos dados</h2>
 <p class="date">Os dados ficam salvos só neste navegador. Use o backup para levar tudo para outro computador ou para a versão hospedada. Importar substitui os dados atuais.</p>
@@ -219,9 +238,9 @@ body.rc-lock{overflow:hidden}
 <p class="date" id="bm"></p>
 </section>
 <section id="v3" hidden>
-<h2>Instruções · referência fixa</h2>
-<div class="f2" id="xl"></div>
-<h2 class="xt" style="margin:26px 0 10px">Entrada de vídeo</h2>
+
+
+<h2 class="xt" style="margin:0 0 10px">Entrada de vídeo</h2>
 <div class="card mod"><header><strong>Módulo 1</strong></header>
 <div class="orow hd"><span>Objeto</span><span>Tipo de entrada de vídeo</span></div>
 <div id="vtab"></div></div>
@@ -234,11 +253,13 @@ body.rc-lock{overflow:hidden}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const ST=['Em andamento','Preview','Final · gravação'];
-const D={people:[0,1,2].map(i=>({name:'Profissional '+(i+1),theme:'',base:0,status:0,note:''})),bases:[{name:'Base A',preview:'',final:''},{name:'Base B',preview:'',final:''},{name:'Base C',preview:'',final:''}],log:[]};
+const D={people:[0,1,2].map(i=>({name:'Profissional '+(i+1),theme:'',base:0,status:0,note:''})),bases:['Tematico','RA','Planeta','Custon'].map(name=>({name,preview:'',final:''})),log:[]};
+const BN=['Tematico','RA','Planeta','Custon'],fixBN=n=>/^Base [A-D]$/.test(n)?BN[n.charCodeAt(5)-65]:n;
 let S;
 try{const r=localStorage.getItem('uecontrol');S=r?JSON.parse(r):null}catch(e){S=null}
 if(!S)S=JSON.parse(JSON.stringify(D));
-while(S.bases.length<3)S.bases.push({name:'Base '+'ABC'[S.bases.length],preview:'',final:''});
+while(S.bases.length<4)S.bases.push({name:BN[S.bases.length],preview:'',final:''});
+S.bases.forEach(b=>{b.name=fixBN(b.name)});
 const saveLocal=()=>{try{localStorage.setItem('uecontrol',JSON.stringify(S));const w=document.getElementById('warn');if(w)w.hidden=true}catch(e){const w=document.getElementById('warn');if(w)w.hidden=false}};
 const save=()=>{saveLocal();if(typeof schedulePush==='function')schedulePush()};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -248,6 +269,7 @@ const br=d=>d.split('-').reverse().join('/');
 $('today').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
 function drawBases(){
+  if(!$('bases'))return;
   $('bases').innerHTML=S.bases.map((b,i)=>`<div class="card">
     <input class="name" data-b="${i}" data-k="name" value="${esc(b.name)}" aria-label="Nome da base">
     <div class="row2" style="grid-template-columns:1fr">
@@ -275,6 +297,7 @@ document.addEventListener('input',e=>{
     if(k==='status')$('p'+i).className='card s'+t.value;
   }
   save();
+  if(t.dataset.p!==undefined)drawStatus();
 });
 function drawLog(){
   if(!S.log.length){$('log').innerHTML='<p class="empty">Nenhum registro ainda. Preencha a equipe e clique em “Registrar o dia”.</p>';return}
@@ -353,13 +376,12 @@ $('add').onclick=()=>{
 $('fq').oninput=$('fs').onchange=drawProj;
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
   const v=b.dataset.v;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
-  $('v1').hidden=v!=1;$('v2').hidden=v!=2;$('v3').hidden=v!=3;$('v4').hidden=v!=4;$('v5').hidden=v!=5;$('v6').hidden=v!=6;if(v==2){fillSel();drawProj()}if(v==3)drawIns();if(v==5)drawDeploy();document.body.classList.toggle('rc-wide',v==6);if(v==6)drawRec()
+  $('v1').hidden=v!=1;$('v2').hidden=v!=2;$('v3').hidden=v!=3;$('v4').hidden=v!=4;$('v6').hidden=v!=6;if(v==2){fillSel();drawProj()}if(v==3)drawIns();document.body.classList.toggle('rc-wide',v==6);if(v==6)drawRec()
 });
 const EX='switchCam01 switchCam02 switchCam03 switchToTp TalentPosX TalentPosY TalentPosZ Lateral_Tematico_In Lateral_Tematico_Out Telao_Horizontal_In Telao_Horizontal_Out switchCam04 Mover_Texto_X Mover_Texto_Y Rotacionar_Texto Scalar_Texto Desce_Texto_AR Delivery_rot Delivery_pos_X Delivery_pos_Y Delivery_Scale Delivery_In Delivery_Out Totem_In Totem_Troca Totem_Out Delivery_pos_Z Totem_pos_X Totem_pos_Y Totem_rot Totem_Scale Play_1 Stop_1 Play_2 Stop_2 Play_3 Stop_3 Play_4 Stop_4 Tela_Virtual_In Tela_Virtual_Out Mover_Z_Tela_Virtual SCale_Tela_Virtual Sobe_Texto_AR Reset_Animations SpeedSeta_In SpeedSeta_Out'.split(' ');
 const EXT='switchCam01 switchCam02 switchCam03 switchToTp TalentPosX TalentPosY TalentPosZ Lateral_Tematico_In Lateral_Tematico_Out Telao_Horizontal_In Telao_Horizontal_Out switchCam04 Delivery_Rot Delivery_Pos_X Delivery_Pos_Y Delivery_Scale Delivery_In Delivery_Out Totem_In Totem_Troca Totem_Out Delivery_Pos_Z Totem_Pos_X Totem_Pos_Y Totem_Rot Totem_Scale Exibir_Tela_RA Exibir_Tela_HD Cards_In Cards_Out Card_2_In Card_3_In Card_4_In Card_Scale Cards_Pos_X Cards_Pos_Y Cards_Rot Texto_RA_In Texto_RA_Out Texto_RA_Scale Texto_RA_Rot Texto_RA_Pos_X Texto_RA_Pos_Y Placa_RA_In Placa_RA_Out Placa_RA_Pos_X Placa_RA_Pos_Y Placa_RA_Scale Placa_RA_Rot Anim_Tematico_01_In Anim_Tematico_02_In Anim_Tematico_03_In Anim_Tematico_04_In Placa_RA_02_In Placa_RA_03_In Placa_RA_04_In RA_In RA_Out Anim_Tematico_05_In Anim_Tematico_06_In Anim_Tematico_07_In Anim_Tematico_08_In Anim_Tematico_Reset'.split(' ');
 const VID=[['CARDS','NdiIn1_MT'],['DELIVERY','In3_MT'],['INFO_HD','In1_MT'],['INFO_HD_CINEMA ( AR )','In1_MT'],['LED_HORIZONTAL','In2_MT']];
 function drawIns(){
-  $('xl').innerHTML=[['Lista exports RA temático',EXT],['Lista exports planeta',EX]].map(([t,L])=>`<div class="card xl"><header><strong class="xt">${t}</strong><span class="meta">${L.length} exports</span></header><div class="xs">${L.map(x=>`<div class="xr">${x}</div>`).join('')}</div></div>`).join('');
   $('vtab').innerHTML=VID.map(v=>`<div class="orow"><span class="ob">${v[0]}</span><span class="ob">${v[1]}</span></div>`).join('');
 }
 async function saveFile(name,data,type){
@@ -451,6 +473,17 @@ function dRisk(){
   if(d>=0&&dq(d).st!==3)return 'Médio';
   return 'Baixo';
 }
+function drawStatus(){
+  const P2=S.people;
+  const opts=sel=>'<option value="">Automático (pelo status)</option>'+P2.map((p,i)=>`<option value="${i}"${String(sel)===String(i)?' selected':''}>${esc(dname(i))} · ${esc(p.name)}</option>`).join('');
+  const slot=([key,title,sub,ci])=>{const r=resolve(key),pk=(dd()[key]||{}).pick;
+    return `<div class="card slot" style="border-top-color:${DHEX[ci]}"><header><strong>${title}</strong></header><div class="st"><span class="dot" style="background:${DHEX[ci]}"></span>${sub}</div>
+    <label>Projeto exibido</label><select data-dk="${key}">${opts(pk)}</select>
+    <div class="nm" style="margin-top:10px">${r>=0?esc(dname(r)):'—'}</div>
+    <div class="kv"><span>Responsável:</span><span>${r>=0?esc(P2[r].name):'—'}</span><span>Ambiente:</span><span>${r>=0?denv(r):'—'}</span></div></div>`};
+  $('dstat').innerHTML=`<h2>Status geral dos deploys</h2><div class="dk">${SLOTS.map(slot).join('')}</div>`;
+}
+$('dstat').addEventListener('input',e=>{const t=e.target;if(t.dataset.dk!==undefined){(dd()[t.dataset.dk]=dd()[t.dataset.dk]||{}).pick=t.value;save();drawStatus()}});
 function drawDeploy(){
   const P2=S.people;
   const opts=sel=>'<option value="">Automático (pelo status)</option>'+P2.map((p,i)=>`<option value="${i}"${String(sel)===String(i)?' selected':''}>${esc(dname(i))} · ${esc(p.name)}</option>`).join('');
@@ -469,8 +502,7 @@ function drawDeploy(){
     <div><label>Ação permitida</label><select data-dq="${i}" data-f="act" data-n="1">${DACT.map((s,j)=>`<option value="${j}"${j==q.act?' selected':''}>${s}</option>`).join('')}</select></div></div>
     <label>Anotação do deploy</label><textarea data-dq="${i}" data-f="note" placeholder="Observações do deploy...">${esc(q.note)}</textarea></div>`};
   const L=k=>{const r=resolve(k);return r>=0?esc(P2[r].name)+' · '+esc(dname(r)):'—'},rk=dRisk();
-  $('dp').innerHTML=`<h2>Status geral dos deploys</h2><div class="dk">${SLOTS.map(slot).join('')}</div>
-  <h2>Fila de deploy · o que cada um tem na fila</h2><div class="dk">${P2.map((_,i)=>queue(i)).join('')}</div>
+  $('dp').innerHTML=`<h2>Fila de deploy · o que cada um tem na fila</h2><div class="dk">${P2.map((_,i)=>queue(i)).join('')}</div>
   <h2>Controle de liberação</h2><div class="card"><div class="ctl">${[['Deploy no ar agora',2,L('air')],['Próximo autorizado',1,L('next')],['Pode ser derrubado',3,L('down')]].map(([t,c,v])=>`<div><label><span class="dot" style="background:${DHEX[c]}"></span>${t}</label><div class="nm">${v}</div></div>`).join('')}
   <div><label><span class="dot" style="background:#2563eb"></span>Risco de conflito</label><div class="nm rk${rk[0]}">${rk}</div></div></div></div>`;
   drawDlog();
@@ -505,18 +537,7 @@ async function pdfFila(){
   K.y+=36;
   await K.end('fila-de-deploy-'+iso()+'.pdf');
 }
-$('v5').addEventListener('input',e=>{
-  const t=e.target;
-  if(t.dataset.dq!==undefined){dq(+t.dataset.dq)[t.dataset.f]=t.dataset.n?+t.value:t.value;save();if(t.tagName==='SELECT')drawDeploy()}
-  else if(t.dataset.dk!==undefined){(dd()[t.dataset.dk]=dd()[t.dataset.dk]||{}).pick=t.value;save();drawDeploy()}
-});
-$('v5').addEventListener('click',e=>{const id=e.target.dataset.dd;if(id===undefined)return;S.dlog=(S.dlog||[]).filter(x=>x.id!=id);save();drawDlog()});
-$('dreg').onclick=()=>{
-  const L=k=>{const r=resolve(k);return r>=0?S.people[r].name+' · '+dname(r):'—'};
-  (S.dlog=S.dlog||[]).unshift({id:Date.now(),date:iso(),time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),air:L('air'),next:L('next'),down:L('down'),risk:dRisk()});
-  save();drawDlog();
-};
-$('dref').onclick=drawDeploy;$('dpdf').onclick=pdfFila;$('th2').onclick=()=>$('th').click();
+
 
 /* ===== Gravação do dia ===== */
 const RN='LOAD UNLOAD|Ativa Desativa|TRACK CAM 1|TRACK CAM 2|TRACK CAM 3|TALENT CAM 1|TALENT CAM 2|TALENT CAM 3|CAM 01|CAM 02|CAM 03|CAM 04|CAM TP|ABRE / FECHA LATERAL|TELA HORIZONTAL|EXIBIR TELA AR|EXIBIR TELA HD|EFEITO RA IN / OUT|TOTEM SOBE DESCE|TOTENS SETTINGS|PLACA SETTINGS|PLACAS IN / OUT|PLACA 02|PLACA 03|PLACA 04|CARDS SETTINGS|CARDS IN OUT|CARD 02|CARD 02|CARD 03|SEQ ANIMAÇÃO 01|SEQ ANIMAÇÃO 02|SEQ ANIMAÇÃO 03|SEQ ANIMAÇÃO 04|SEQ ANIMAÇÃO 05|SEQ ANIMAÇÃO 06|SEQ ANIMAÇÃO 07|SEQ ANIMAÇÃO 08|DELIVERY IN / OUT|DELIVERY SETTINGS|TEXTO IN / OUT|TEXTO SETTINGS|INFO TELAO IN OUT|INFO TELAO 2 IN|INFO TELAO 3 IN|INFO TELAO 4 IN'.split('|').map(n=>n==='EFEITO RA IN / OUT'?n:n+' - RA TEMÁTICO');
@@ -630,7 +651,7 @@ $('expd').onclick=pdfDia;
 $('bx').onclick=async()=>{const j=JSON.stringify(S);$('bt').value=j;$('bm').textContent='Dados exportados abaixo ('+Math.round(j.length/1024)+' KB).';try{await navigator.clipboard.writeText(j);$('bm').textContent+=' Copiado para a área de transferência.'}catch(e){$('bm').textContent+=' Selecione o texto e copie manualmente.'}};
 $('bd').onclick=()=>saveFile('controle-projetos-backup-'+iso()+'.json',JSON.stringify(S),'application/json');
 $('bf').onchange=async e=>{const f=e.target.files[0];if(f)$('bt').value=await f.text();e.target.value=''};
-$('bi').onclick=()=>{try{const d=JSON.parse($('bt').value);if(!d||!Array.isArray(d.bases)||!Array.isArray(d.people))throw 0;S=d;S.projects=S.projects||[];S.log=S.log||[];S.deploy=S.deploy||{};S.dlog=S.dlog||[];S.rec=S.rec||{};save();drawBases();drawPeople();drawLog();$('bm').textContent='Dados importados com sucesso.'}catch(e){$('bm').textContent='Texto inválido: cole o backup exportado.'}};
+$('bi').onclick=()=>{try{const d=JSON.parse($('bt').value);if(!d||!Array.isArray(d.bases)||!Array.isArray(d.people))throw 0;S=d;S.tasks=S.tasks||[];S.projects=S.projects||[];S.log=S.log||[];S.deploy=S.deploy||{};S.dlog=S.dlog||[];S.rec=S.rec||{};save();drawBases();drawStatus();drawPeople();drawLog();$('bm').textContent='Dados importados com sucesso.'}catch(e){$('bm').textContent='Texto inválido: cole o backup exportado.'}};
 function syncToday(){
   if(!S.people.some(p=>p.theme||p.note))return;
   const e={date:iso(),rows:S.people.map(p=>({name:p.name,base:(S.bases[p.base]||{}).name||'-',theme:p.theme,status:p.status,note:p.note}))};
@@ -640,9 +661,122 @@ function syncToday(){
   $('autonote').textContent='Histórico de hoje atualizado automaticamente às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'. Permanece até alguém atualizar os dados.';
 }
 document.addEventListener('input',e=>{const t=e.target;if(t.dataset&&t.dataset.k&&(t.dataset.p!==undefined||t.dataset.b!==undefined)){clearTimeout(syncToday.t);syncToday.t=setTimeout(syncToday,700)}});
+/* ===== Quadro do dia (kanban) ===== */
+const KCOL=['A fazer','Em andamento','Finalizado'],KCLR=['var(--wk)','var(--ac)','var(--fn)'];
+S.tasks=S.tasks||[];
+const tk=id=>S.tasks.find(t=>t.id==id);
+const ini=n=>String(n||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
+const kord=()=>{S.tasks.forEach((t,i)=>{t.order=i})};
+function kcard(t){
+  const m=(t.members||[]).map(i=>S.people[i]).filter(Boolean),b=S.bases[t.base],tag=[b&&b.name,t.theme].filter(Boolean).join(' · '),nr=(t.refs||[]).length;
+  return `<div class="kk" draggable="true" data-id="${t.id}"><div class="kt">${esc(t.title)}</div>${tag?`<span class="chip s1">${esc(tag)}</span>`:''}
+  <div class="kf"><span>${t.desc?'Descrição ':''}${nr?'· '+nr+' ref.':''}</span><span class="av">${m.map(p=>`<i title="${esc(p.name)}">${esc(ini(p.name))}</i>`).join('')}</span></div></div>`;
+}
+function drawKb(){
+  if(!$('kb'))return;
+  const T=[...S.tasks].sort((a,b)=>(a.order||0)-(b.order||0));
+  $('kb').innerHTML=KCOL.map((n,c)=>{const L=T.filter(t=>t.col===c);
+    return `<div class="kc" data-col="${c}"><div class="kh" style="border-top-color:${KCLR[c]}"><strong>${n}</strong><span class="meta">${L.length}</span></div>
+    <div class="kl">${L.map(kcard).join('')}</div>
+    <div class="ka"><input data-ka="${c}" placeholder="+ Adicionar cartão" aria-label="Novo cartão em ${n}"></div></div>`}).join('');
+}
+function kadd(c,title){
+  title=title.trim();if(!title)return;
+  S.tasks.push({id:Date.now(),title,col:c,base:-1,theme:'',members:[],desc:'',refs:[],order:S.tasks.length,created:iso()});
+  save();drawKb();const i=document.querySelector('[data-ka="'+c+'"]');if(i)i.focus();
+}
+function kfin(t){
+  if(t.col!==2)return;
+  const who=(t.members||[]).map(i=>(S.people[i]||{}).name).filter(Boolean).join(', '),base=t.base>=0?t.base:0;
+  let p=t.projId&&S.projects.find(x=>x.id==t.projId);
+  if(p){p.name=t.title;p.base=base;p.theme=t.theme||'';if(who)p.who=who;return}
+  const refs=(t.refs||[]).filter(r=>r.kind!=='img'),nt=[t.desc||'',refs.length?'Referências:\n'+refs.map(r=>'- '+(r.label?r.label+': ':'')+r.url).join('\n'):''].filter(Boolean).join('\n\n');
+  p={id:Date.now(),name:t.title,base,theme:t.theme||'',who,status:3,note:nt,c:t.created||iso(),f:iso(),imgs:(t.refs||[]).filter(r=>r.kind==='img').map(r=>r.data),taskId:t.id};
+  S.projects.unshift(p);t.projId=p.id;
+  note('Projeto “'+t.title+'” adicionado ao histórico.');
+}
+function kmove(id,c,beforeId){
+  const t=tk(id);if(!t)return;
+  S.tasks=S.tasks.filter(x=>x!==t);t.col=c;
+  if(c===2&&!t.done)t.done=iso();if(c!==2)delete t.done;
+  const k=beforeId!=null?S.tasks.findIndex(x=>x.id==beforeId):-1;
+  if(k>=0)S.tasks.splice(k,0,t);else S.tasks.push(t);
+  kfin(t);kord();save();drawKb();
+}
+let kdrag=null;
+$('kb')&&$('kb').addEventListener('click',e=>{const k=e.target.closest('.kk');if(k)openTk(k.dataset.id)});
+$('kb')&&$('kb').addEventListener('keydown',e=>{const t=e.target;if(t.dataset.ka!==undefined&&e.key==='Enter'){e.preventDefault();kadd(+t.dataset.ka,t.value)}});
+$('kb')&&$('kb').addEventListener('dragstart',e=>{const k=e.target.closest('.kk');if(!k)return;kdrag=k.dataset.id;k.classList.add('drag');try{e.dataTransfer.setData('text/plain',kdrag);e.dataTransfer.effectAllowed='move'}catch(x){}});
+$('kb')&&$('kb').addEventListener('dragend',()=>{kdrag=null;document.querySelectorAll('.kk.drag,.kc.over').forEach(x=>x.classList.remove('drag','over'))});
+$('kb')&&$('kb').addEventListener('dragover',e=>{const c=e.target.closest('.kc');if(!c||kdrag===null)return;e.preventDefault();document.querySelectorAll('.kc.over').forEach(x=>x!==c&&x.classList.remove('over'));c.classList.add('over')});
+$('kb')&&$('kb').addEventListener('drop',e=>{const c=e.target.closest('.kc');if(!c||kdrag===null)return;e.preventDefault();const k=e.target.closest('.kk'),id=kdrag;kdrag=null;kmove(id,+c.dataset.col,k&&k.dataset.id!=id?k.dataset.id:null)});
+
+document.body.insertAdjacentHTML('beforeend','<div id="tmod" hidden></div>');
+let tmId=null,tmArm=false;
+function openTk(id){tmId=id;tmArm=false;drawTm();$('tmod').hidden=false;document.body.classList.add('rc-lock')}
+function closeTk(){tmId=null;$('tmod').hidden=true;document.body.classList.remove('rc-lock');drawKb()}
+function drawTm(){
+  const t=tk(tmId);if(!t){closeTk();return}
+  const refs=t.refs||[];
+  $('tmod').innerHTML=`<div class="tbox" role="dialog" aria-label="Cartão do projeto">
+  <div class="th2"><select data-tf="col" aria-label="Lista">${KCOL.map((n,i)=>`<option value="${i}"${i===t.col?' selected':''}>${n}</option>`).join('')}</select><button data-tx="close" aria-label="Fechar">✕</button></div>
+  <div class="tl">
+    <input class="name" data-tf="title" value="${esc(t.title)}" aria-label="Nome do projeto">
+    <div class="row2"><div><label>Projeto base</label><select data-tf="base"><option value="-1">—</option>${S.bases.map((b,i)=>`<option value="${i}"${i===t.base?' selected':''}>${esc(b.name)}</option>`).join('')}</select></div>
+    <div><label>Nome do tema</label><input data-tf="theme" value="${esc(t.theme||'')}" placeholder="ex.: Tema Inverno"></div></div>
+    <label>Membros</label>
+    <div class="mem">${S.people.map((p,i)=>`<button data-tm="${i}" class="${(t.members||[]).includes(i)?'on':''}" aria-pressed="${(t.members||[]).includes(i)}"><i>${esc(ini(p.name))}</i>${esc(p.name)}</button>`).join('')}</div>
+    <label>Descrição do projeto</label>
+    <textarea data-tf="desc" placeholder="Adicione uma descrição mais detalhada...">${esc(t.desc||'')}</textarea>
+  </div>
+  <div class="tr">
+    <label style="margin-top:0">Referências</label>
+    <div>${refs.map((r,i)=>r.kind==='img'?'':`<div class="rf"><a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.label||r.url)}</a><button class="x" data-rx="${i}" aria-label="Remover referência">✕</button></div>`).join('')}</div>
+    <div class="rg">${refs.map((r,i)=>r.kind==='img'?`<div class="im"><img src="${r.data}" alt="Referência" data-ri="${i}"><button class="x" data-rx="${i}" aria-label="Remover imagem">✕</button></div>`:'').join('')}</div>
+    <input data-tl placeholder="Nome da referência (opcional)"><input data-tu placeholder="Link (https://...)" style="margin-top:6px">
+    <div class="bar"><button class="p" data-tx="link">Adicionar link</button><label class="btn">Adicionar imagem<input type="file" accept="image/*" multiple hidden data-ti></label></div>
+    <label>Atividade</label><div class="meta">Criado em ${t.created?br(t.created):'—'}${t.done?' · Finalizado em '+br(t.done):''}</div>
+    <div class="bar" style="margin-top:20px"><button data-tx="del">${tmArm?'Confirmar exclusão?':'Excluir cartão'}</button></div>
+  </div></div>`;
+}
+$('tmod').addEventListener('input',e=>{
+  const t=tk(tmId),el=e.target,f=el.dataset.tf;if(!t||!f)return;
+  t[f]=(f==='col'||f==='base')?+el.value:el.value;
+  if(f==='col'){if(t.col===2&&!t.done)t.done=iso();if(t.col!==2)delete t.done;drawTm()}
+  kfin(t);save();drawKb();
+});
+$('tmod').addEventListener('change',async e=>{
+  const el=e.target;if(el.dataset.ti===undefined)return;const t=tk(tmId);if(!t)return;
+  t.refs=t.refs||[];
+  for(const f of el.files){if(f.type.startsWith('image/'))t.refs.push({kind:'img',data:await shrink(f)})}
+  save();drawTm();drawKb();
+});
+$('tmod').addEventListener('click',e=>{
+  const t=tk(tmId),el=e.target;
+  if(el===$('tmod')){closeTk();return}
+  if(!t)return;
+  const b=el.closest('button'),x=b&&b.dataset;
+  if(el.dataset.ri!==undefined){$('lb').querySelector('img').src=t.refs[+el.dataset.ri].data;$('lb').hidden=false;$('lb').style.zIndex=90;return}
+  if(!x)return;
+  if(x.tm!==undefined){const i=+x.tm,m=t.members=t.members||[];const k=m.indexOf(i);k>=0?m.splice(k,1):m.push(i);m.sort();save();drawTm();drawKb()}
+  else if(x.rx!==undefined){t.refs.splice(+x.rx,1);save();drawTm();drawKb()}
+  else if(x.tx==='close')closeTk();
+  else if(x.tx==='link'){
+    const u=$('tmod').querySelector('[data-tu]'),l=$('tmod').querySelector('[data-tl]');let v=u.value.trim();if(!v)return;
+    if(!/^https?:\/\//i.test(v))v='https://'+v;
+    (t.refs=t.refs||[]).push({kind:'link',label:l.value.trim(),url:v});save();drawTm();drawKb();
+  }
+  else if(x.tx==='del'){
+    if(tmArm){S.tasks=S.tasks.filter(z=>z!==t);kord();save();closeTk()}
+    else{tmArm=true;drawTm();setTimeout(()=>{if(tmArm&&tmId){tmArm=false;drawTm()}},3000)}
+  }
+});
+$('tmod').addEventListener('keydown',e=>{if(e.target.dataset.tu!==undefined&&e.key==='Enter'){e.preventDefault();$('tmod').querySelector('[data-tx="link"]').click()}});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&tmId&&$('lb').hidden)closeTk()});
+
 /* ===== Sincronização compartilhada (db) ===== */
 let DB=null,ready=false,ro=false,pushT=0,pushing=false,again=false,needApply=false,deferR=false,firstApply=true,last={};
-const NAMES=['people','bases','log','projects','prints','deploy','dlog','rec','recbase'],R={people:{},bases:{},log:{},projects:{},prints:{},deploy:{},dlog:{},rec:{},recbase:{}},got={},idc=new Map();
+const NAMES=['people','bases','log','projects','prints','deploy','dlog','rec','recbase','tasks'],R={people:{},bases:{},log:{},projects:{},prints:{},deploy:{},dlog:{},rec:{},recbase:{},tasks:{}},got={},idc=new Map();
 function hid(d){let v=idc.get(d);if(v)return v;let a=5381,b=52711;for(let i=0;i<d.length;i++){const c=d.charCodeAt(i);a=((a*33)^c)|0;b=(b*31+c)|0}v=(a>>>0).toString(36)+(b>>>0).toString(36)+d.length.toString(36);idc.set(d,v);return v}
 const sk=o=>Array.isArray(o)?o.map(sk):(o&&typeof o==='object')?Object.fromEntries(Object.keys(o).sort().filter(k=>o[k]!==undefined).map(k=>[k,sk(o[k])])):o;
 const sj=o=>JSON.stringify(sk(o)),cl=o=>JSON.parse(JSON.stringify(o)),jm=D=>Object.fromEntries(Object.entries(D).map(([k,v])=>[k,v.j]));
@@ -655,6 +789,11 @@ function docsOf(st){
   (st.dlog||[]).forEach(d=>{D['dlog/'+d.id]={o:d,j:sj(d)}});
   Object.entries(st.rec||{}).forEach(([k,v])=>{const o={date:k,on:v.on||[],done:v.done||[],note:v.note||'',pos:v.pos||{}};D['rec/'+k]={o,j:sj(o)}});
   if(st.recBase){const o={on:st.recBase.on||[],pos:st.recBase.pos||{}};D['recbase/main']={o,j:sj(o)}}
+  (st.tasks||[]).forEach(t=>{
+    const refs=(t.refs||[]).map(x=>x.kind==='img'?{kind:'img',id:hid(x.data)}:x);
+    const o={...t,refs};D['tasks/'+t.id]={o,j:sj(o)};
+    (t.refs||[]).forEach(x=>{if(x.kind==='img'){const id=hid(x.data);D['prints/'+id]={o:{data:x.data},j:'p'+id}}});
+  });
   st.projects.forEach(p=>{
     const {imgs,...r}=p;const ids=(imgs||[]).map(hid);r.imgs=ids;
     D['projects/'+p.id]={o:r,j:sj(r)};
@@ -664,22 +803,23 @@ function docsOf(st){
 }
 function fromR(){
   const ns={...S};
-  ns.bases=S.bases.map((b,i)=>R.bases[i]?{...b,...cl(R.bases[i])}:b);
+  ns.bases=S.bases.map((b,i)=>{const r=R.bases[i]?{...b,...cl(R.bases[i])}:b;r.name=fixBN(r.name);return r});
   ns.people=S.people.map((p,i)=>R.people[i]?{...p,...cl(R.people[i])}:p);
   ns.log=Object.values(R.log).map(cl).sort((a,b)=>b.date<a.date?-1:1);
   ns.deploy={...(S.deploy||{})};Object.entries(R.deploy).forEach(([k,v])=>{ns.deploy[k]=cl(v)});
   ns.dlog=Object.values(R.dlog).map(cl).sort((a,b)=>b.id-a.id);
   ns.rec={...(S.rec||{})};Object.entries(R.rec).forEach(([k,v])=>{ns.rec[k]={on:[...(v.on||[])],done:[...(v.done||[])],note:v.note||'',pos:cl(v.pos||{})}});
   ns.recBase=R.recbase.main?{on:[...(R.recbase.main.on||[])],pos:cl(R.recbase.main.pos||{})}:S.recBase;
+  ns.tasks=Object.values(R.tasks).map(d=>({...cl(d),refs:(d.refs||[]).map(x=>x.kind==='img'?{kind:'img',data:R.prints[x.id]&&R.prints[x.id].data}:x).filter(x=>x.kind!=='img'||x.data)})).sort((a,b)=>(a.order||0)-(b.order||0));
   ns.projects=Object.values(R.projects).map(d=>({...cl(d),imgs:(d.imgs||[]).map(id=>R.prints[id]&&R.prints[id].data).filter(Boolean)})).sort((a,b)=>b.id-a.id);
   return ns;
 }
 function redraw(){
   const a=document.activeElement;
-  if(a&&a.closest&&a.closest('#people,#bases,#plist,#dp,#rcnote')&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){deferR=true;return}
-  drawBases();drawPeople();drawLog();if(!$('v2').hidden)drawProj();if(!$('v5').hidden)drawDeploy();if(!$('v6').hidden)drawRec();
+  if(a&&a.closest&&a.closest('#people,#bases,#dstat,#kb,#tmod,#plist,#dp,#rcnote')&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){deferR=true;return}
+  drawBases();drawStatus();drawKb();if(tmId){if(tk(tmId)){if(!$('tmod').contains(document.activeElement))drawTm()}else closeTk()}drawPeople();drawLog();if(!$('v2').hidden)drawProj();if(!$('v6').hidden)drawRec();
 }
-document.addEventListener('focusout',()=>{if(deferR)setTimeout(()=>{const a=document.activeElement;if(a&&a.closest&&a.closest('#people,#bases,#plist,#dp,#rcnote')&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;deferR=false;redraw()},80)});
+document.addEventListener('focusout',()=>{if(deferR)setTimeout(()=>{const a=document.activeElement;if(a&&a.closest&&a.closest('#people,#bases,#dstat,#kb,#tmod,#plist,#dp,#rcnote')&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;deferR=false;redraw()},80)});
 function applyRemote(){
   if(!ready)return;
   if(pushT||pushing){needApply=true;return}
@@ -722,7 +862,7 @@ function setSync(s){
 function startSync(){
   ready=true;
   if(NAMES.every(n=>!Object.keys(R[n]).length)){
-    const has=S.projects.length||S.log.length||S.people.some(p=>p.theme||p.note)||S.bases.some(b=>b.preview||b.final);
+    const has=S.projects.length||S.tasks.length||S.log.length||S.people.some(p=>p.theme||p.note)||S.bases.some(b=>b.preview||b.final);
     last=has?{}:jm(docsOf(S));firstApply=false;setSync('ok');if(has)schedulePush();
   }else{setSync('ok');applyRemote()}
 }
@@ -741,7 +881,7 @@ async function connectDb(){
   });
 }
 
-drawBases();drawPeople();drawLog();syncToday();connectDb();setTimeout(()=>{if(DB&&!ready)setSync('err')},12000);
+drawBases();drawStatus();drawKb();drawPeople();drawLog();syncToday();connectDb();setTimeout(()=>{if(DB&&!ready)setSync('err')},12000);
 </script>
 </body>
 </html>
